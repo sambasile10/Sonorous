@@ -3,11 +3,11 @@ package res;
 public abstract class ManagedThread extends Thread {
 	
 	private int threadID;
-	private String threadName;
+	private String className;
 	
 	public ManagedThread(String className) {
 		this.threadID = ThreadManager.register(this);
-		this.threadName = className;
+		this.className = className;
 		Log.write("Registered new thread [ " + className + "] with ID [" + threadID + "]");
 	}
 	

@@ -40,12 +40,13 @@ public class RSACipherStream extends ManagedThread {
 	private Cipher cipher;
 	private SecureRandom secureRandom;
 	private Key key = null;
-	private boolean isInitialized = false;
+	private boolean isInitialized = false, useBase64 = false;
 	
-	public RSACipherStream(CipherMode cipherMode, Key key) {
+	public RSACipherStream(CipherMode cipherMode, Key key, boolean useBase64) {
 		super("RSACipherStream");
 		this.cipherMode = cipherMode;
 		this.key = key;
+		this.useBase64 = useBase64;
 	}
 	
 	public byte[] pipe(byte[] data) {
@@ -54,7 +55,7 @@ public class RSACipherStream extends ManagedThread {
 		
 		try {
 			byte[] cData = cipher.doFinal(data);
-			return cipherMode == CipherMode.ENCRYPT ? Base64.encodeBase64(cData) : cData;
+			return useBase64 ? (cipherMode == CipherMode.ENCRYPT ? Base64.encodeBase64(cData) : Base64.decodeBase64(cData)) : cData;
 		} catch (GeneralSecurityException e) {
 			e.printStackTrace();
 			return null;

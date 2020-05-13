@@ -47,10 +47,10 @@ public class CipherFactory extends ManagedThread {
 		}
 	}
 	
-	public RSACipherStream buildRSAStream(CipherMode cipherMode, Key key) {
+	public RSACipherStream buildRSAStream(CipherMode cipherMode, Key key, boolean useBase64) {
 		if(cipherMode == CipherMode.ENCRYPT) {
 			if(key instanceof PublicKey) {
-				RSACipherStream cThread = new RSACipherStream(cipherMode, key);
+				RSACipherStream cThread = new RSACipherStream(cipherMode, key, useBase64);
 				if(cThread.initialize() == 0) {
 					cThread.exec();
 					return cThread;
@@ -62,7 +62,7 @@ public class CipherFactory extends ManagedThread {
 			}
 		} else if(cipherMode == CipherMode.DECRYPT) {
 			if(key instanceof PrivateKey) {
-				RSACipherStream cThread = new RSACipherStream(cipherMode, key);
+				RSACipherStream cThread = new RSACipherStream(cipherMode, key, useBase64);
 				if(cThread.initialize() == 0) {
 					cThread.exec();
 					return cThread;
@@ -77,62 +77,14 @@ public class CipherFactory extends ManagedThread {
 		}
 	}
 	
-	public AESCipherStream buildAESThread(AESParameters aesParams) {
-		AESCipherStream cThread = new AESCipherStream(aesParams);
+	public AESCipherStream buildAESThread(AESParameters aesParams, boolean useBase64) {
+		AESCipherStream cThread = new AESCipherStream(aesParams, useBase64);
 		if(cThread.initialize() == 0) {
 			cThread.exec();
 			return cThread;
 		} else {
 			throw new InvalidCipherInitializationException("Failed to initialize AESCipherStream!");
 		}
-	}
-	
-	public KeyPair generateKeyPair(int keySize) {
-		try {
-			KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-			kpg.initialize(keySize);
-			KeyPair kp = kpg.genKeyPair();
-			return kp;
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-		
-		return null;
-	}
-	
-	public HashMap<String, byte[]> formatKeyPairAsPKCS1(PublicKey pub, PrivateKey priv) {
-		HashMap<String, byte[]> pkcs1map = new HashMap<String, byte[]>();
-		
-		if(pub != null) {
-			try {
-				byte[] pubBytes = pub.getEncoded();
-				SubjectPublicKeyInfo spkInfo = SubjectPublicKeyInfo.getInstance(pubBytes);
-				ASN1Primitive publicPrimitive = spkInfo.parsePublicKey();
-				byte[] publicKeyPKCS1 = publicPrimitive.getEncoded();
-				pkcs1map.put("PUBLIC", publicKeyPKCS1);
-			} catch (IOException e1) {
-				Log.error("Error while converting key pair to PKCS1");
-				e1.printStackTrace();
-				return null;
-			}
-		}
-
-		if(priv != null) {
-			try {
-				byte[] privBytes = priv.getEncoded();
-				PrivateKeyInfo pkInfo = PrivateKeyInfo.getInstance(privBytes);
-				ASN1Encodable encodable = pkInfo.parsePrivateKey();
-				ASN1Primitive privatePrimitive = encodable.toASN1Primitive();
-				byte[] privateKeyPKCS1 = privatePrimitive.getEncoded();
-				pkcs1map.put("PRIVATE", privateKeyPKCS1);
-			} catch (IOException e2) {
-				Log.error("Error while converting key pair to PKCS1");
-				e2.printStackTrace();
-				return null;
-			}
-		}
-		
-		return pkcs1map;
 	}
 
 }

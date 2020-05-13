@@ -7,13 +7,16 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.security.spec.KeySpec;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
@@ -30,11 +33,26 @@ public class AESCipherStream extends ManagedThread {
 	private AESParameters cipherParams;
 	private Cipher cipher;
 	private SecureRandom secureRandom;
-	private boolean isInitialized = false;
+	private boolean isInitialized = false, useBase64 = false;
 	
-	public AESCipherStream(AESParameters cipherParams) {
+	public AESCipherStream(AESParameters cipherParams, boolean useBase64) {
 		super("AESCipherThread");
 		this.cipherParams = cipherParams;
+		this.useBase64 = useBase64;
+	}
+	
+	public byte[] pipe(byte[] data) {
+		if(!this.isInitialized)
+			return null;
+		
+		try {
+			byte[] cData = cipher.doFinal(data);
+			return useBase64 ? (cipherParams.getCipherMode() == CipherMode.ENCRYPT ? Base64.encodeBase64(cData) : Base64.decodeBase64(cData)) : cData;
+		} catch (IllegalBlockSizeException | BadPaddingException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
 	}
 	
 	@Override
