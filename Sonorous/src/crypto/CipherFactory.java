@@ -77,7 +77,7 @@ public class CipherFactory extends ManagedThread {
 		}
 	}
 	
-	public AESCipherStream buildAESThread(AESParameters aesParams, boolean useBase64) {
+	public AESCipherStream buildAESStream(AESParameters aesParams, boolean useBase64) {
 		AESCipherStream cThread = new AESCipherStream(aesParams, useBase64);
 		if(cThread.initialize() == 0) {
 			cThread.exec();
