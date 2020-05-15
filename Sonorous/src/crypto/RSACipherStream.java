@@ -44,7 +44,7 @@ public class RSACipherStream extends ManagedThread {
 	private Key key = null;
 	private boolean isInitialized = false, useBase64 = false;
 	
-	public RSACipherStream(CipherMode cipherMode, Key key, boolean useBase64) {
+	protected RSACipherStream(CipherMode cipherMode, Key key, boolean useBase64) {
 		super("RSACipherStream");
 		this.cipherMode = cipherMode;
 		this.key = key;

@@ -14,7 +14,10 @@ import res.ManagedThread;
 import res.Sonorous;
 import res.ThreadManager;
 
-public class FileEncryptionStream extends ManagedThread {
+public class FileEncryptionStream extends ManagedThread implements ProgressMonitoredThread {
+	
+	private float progress;
+	private int stage;
 	
 	protected final int BUFFER_SIZE = 4096 * 1024; //4MB buffer
 	
@@ -32,6 +35,8 @@ public class FileEncryptionStream extends ManagedThread {
 		this.inputFile = inputFile;
 		this.destinationFile = destinationFile;
 		this.cipherParams = cipherParams;
+		this.stage = 0;
+		this.progress = 0.0F;
 	}
 	
 	
@@ -80,6 +85,7 @@ public class FileEncryptionStream extends ManagedThread {
 	}
 	
 	private int createPackage() {
+		this.stage = 1;
 		/*
 		 * Stage 1 - Compress the original file
 		 */
@@ -96,6 +102,9 @@ public class FileEncryptionStream extends ManagedThread {
 			return -4;
 		}
 		
+		this.stage = 2;
+		this.progress = 33.33F;
+		
 		/*
 		 * Stage 2 - Encryption Stream to destination file
 		 */
@@ -103,6 +112,7 @@ public class FileEncryptionStream extends ManagedThread {
 		//Calculate stream properties
 		long tempFileSize = tempFile.length();
 		long numBlocks, finalBlockLength;
+		float progressPerBlock;
 		if(tempFileSize <= BUFFER_SIZE) {
 			//File is smaller than the buffer size, only use one block
 			numBlocks = 1;
@@ -112,6 +122,8 @@ public class FileEncryptionStream extends ManagedThread {
 			numBlocks = (long) Math.ceil((double)(tempFileSize / BUFFER_SIZE)); //Number of blocks to encrypt and write
 			finalBlockLength = (long)(tempFileSize % BUFFER_SIZE); //Size of the final block in bytes
 		}
+		
+		progressPerBlock = (100.0F - 33.33F) / numBlocks;
 		
 		//Create file I/O streams
 		FileInputStream inputStream;
@@ -143,6 +155,7 @@ public class FileEncryptionStream extends ManagedThread {
 			
 			//Encrypt read data then write to destination file
 			byte[] cData = cipherStream.pipe(readBuffer);
+			progress += progressPerBlock;
 			try {
 				outputStream.write(cData);
 			} catch (IOException e) {
@@ -150,6 +163,9 @@ public class FileEncryptionStream extends ManagedThread {
 				return -1;
 			}
 		}
+		
+		stage = 3;
+		progress = 100.0F;
 		
 		/*
 		 * Stage 3 - Cleanup data
@@ -181,6 +197,14 @@ public class FileEncryptionStream extends ManagedThread {
 			return 1;
 		}
 		
+	}
+	
+	public float getProgress() {
+		return this.progress;
+	}
+	
+	public int getStage() {
+		return this.stage;
 	}
 
 }

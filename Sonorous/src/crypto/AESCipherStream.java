@@ -37,7 +37,7 @@ public class AESCipherStream extends ManagedThread {
 	private SecureRandom secureRandom;
 	private boolean isInitialized = false, useBase64 = false;
 	
-	public AESCipherStream(AESParameters cipherParams, boolean useBase64) {
+	protected AESCipherStream(AESParameters cipherParams, boolean useBase64) {
 		super("AESCipherThread");
 		this.cipherParams = cipherParams;
 		this.useBase64 = useBase64;

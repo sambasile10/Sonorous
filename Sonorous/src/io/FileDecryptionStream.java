@@ -14,7 +14,10 @@ import res.ManagedThread;
 import res.Sonorous;
 import res.ThreadManager;
 
-public class FileDecryptionStream extends ManagedThread {
+public class FileDecryptionStream extends ManagedThread implements ProgressMonitoredThread {
+	
+	private int stage;
+	private float progress;
 	
 	protected final int BUFFER_SIZE = 4096 * 1024; //4MB buffer
 	
@@ -29,6 +32,11 @@ public class FileDecryptionStream extends ManagedThread {
 	
 	public FileDecryptionStream(File inputFile, File destinationFile, AESParameters cipherParams) {
 		super("FileDecryptionStream");
+		this.inputFile = inputFile;
+		this.destinationFile = destinationFile;
+		this.cipherParams = cipherParams;
+		this.stage = 0;
+		this.progress = 0.0F;
 	}
 	
 	@Override
@@ -76,6 +84,8 @@ public class FileDecryptionStream extends ManagedThread {
 	}
 	
 	private int unpack() {
+		this.stage = 1;
+		
 		/*
 		 * Stage 1 - Loop decryption and write to temp file
 		 */
@@ -87,6 +97,7 @@ public class FileDecryptionStream extends ManagedThread {
 		// Calculate stream properties
 		long inputFileSize = inputFile.length();
 		long numBlocks, finalBlockLength;
+		float progressPerBlock;
 		if (inputFileSize <= BUFFER_SIZE) {
 			// File is smaller than the buffer size, only use one block
 			numBlocks = 1;
@@ -96,6 +107,8 @@ public class FileDecryptionStream extends ManagedThread {
 			numBlocks = (long) Math.ceil((double) (inputFileSize / BUFFER_SIZE)); // Number of blocks to encrypt and write
 			finalBlockLength = (long) (inputFileSize % BUFFER_SIZE); // Size of the final block in bytes
 		}
+		
+		progressPerBlock = (100.0F - 33.33F) / numBlocks;
 
 		// Create file I/O streams
 		FileInputStream inputStream;
@@ -127,6 +140,7 @@ public class FileDecryptionStream extends ManagedThread {
 
 			// Encrypt read data then write to destination file
 			byte[] cData = cipherStream.pipe(readBuffer);
+			this.progress += progressPerBlock;
 			try {
 				outputStream.write(cData);
 			} catch (IOException e) {
@@ -135,11 +149,17 @@ public class FileDecryptionStream extends ManagedThread {
 			}
 		}
 		
+		this.stage = 2;
+		this.progress = 66.67F;
+		
 		/*
 		 * Stage 2 - Decompress temp file to the destination file
 		 */
 		
 		ZipUtil.unpack(tempFile, destinationFile);
+		
+		this.stage = 3;
+		this.progress = 100.0F;
 		
 		/*
 		 * Stage 3 - Cleanup and verify
@@ -169,6 +189,14 @@ public class FileDecryptionStream extends ManagedThread {
 			//Failed to delete temporary file, but still wrote out
 			return 1;
 		}
+	}
+	
+	public float getProgress() {
+		return this.progress;
+	}
+	
+	public int getStage() {
+		return this.stage;
 	}
 
 }

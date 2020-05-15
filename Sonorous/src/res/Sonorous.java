@@ -2,6 +2,7 @@ package res;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import crypto.CipherFactory;
@@ -17,6 +18,7 @@ public class Sonorous {
 	private static File currentDirectoryPath;
 	private static HashMap<String, String> PROPERTIES;
 	protected static File sonorousLogFilePath;
+	protected static ArrayList<Module> loadedModules;
 	
 	//Sonorous non-static components
 	private static CipherFactory thread_CipherFactory = null;
@@ -54,6 +56,8 @@ public class Sonorous {
 	}
 	
 	private static int initializeSonorousBase() {
+		loadedModules = new ArrayList<Module>();
+		
 		try {
 			//Get current working directory
 			currentDirectoryPath = new File(Sonorous.class.getProtectionDomain().getCodeSource().getLocation()
@@ -88,12 +92,17 @@ public class Sonorous {
 			isThreadManagerInitialized + ", Exception Manager module: " + isExceptionManagerInitialized + ".");
 			return -1;
 		} else {
+			loadedModules.add(Module.BASE);
 			Log.write("Registered base modules!");
 			return 0;
 		}
 	}
 	
 	private static int initializeSonorousCrypto() {
+		if(!loadedModules.contains(Module.BASE)) {
+			return -2;
+		}
+		
 		thread_CipherFactory = new CipherFactory();
 		int isCipherFactoryInitialized = thread_CipherFactory.initialize();
 		
@@ -104,6 +113,7 @@ public class Sonorous {
 			Log.error("CipherFactory: " + isCipherFactoryInitialized + ", CipherUtil: " + isCipherUtilInitialized);
 			return -1;
 		} else {
+			loadedModules.add(Module.CRYPTO);
 			Log.write("Registered cryptographic modules!");
 		}
 		
