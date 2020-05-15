@@ -30,5 +30,9 @@ public abstract class ManagedThread extends Thread {
 		}
 	}
 	
+	public int getThreadID() {
+		return threadID;
+	}
+	
 
 }

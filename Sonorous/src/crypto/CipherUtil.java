@@ -27,6 +27,8 @@ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import res.ErrorCode;
+import res.InternalExceptionManager;
 import res.Log;
 import res.ManagedThread;
 import res.ThreadManager;
@@ -57,6 +59,7 @@ public class CipherUtil extends ManagedThread {
 			final byte[] hash = digest.digest(data);
 			return Base64.encodeBase64(hash);
 		} catch (NoSuchAlgorithmException e) {
+			InternalExceptionManager.handleException(e, this, ErrorCode.CUTIL_NO_SUCH_HASHALG);
 			e.printStackTrace();
 			return null;
 		}
@@ -70,6 +73,7 @@ public class CipherUtil extends ManagedThread {
 	        byte[] signature = rsaSign.sign();
 	        return signature;
 		} catch (NoSuchAlgorithmException | NoSuchProviderException | SignatureException | InvalidKeyException e) {
+			InternalExceptionManager.handleException(e, this, ErrorCode.CUTIL_SIGN_ERROR);
 			e.printStackTrace();
 			return null;
 		}
@@ -83,6 +87,7 @@ public class CipherUtil extends ManagedThread {
 	        rsaVerify.update(signedData);
 	        return rsaVerify.verify(signedData);
 		} catch (NoSuchAlgorithmException | NoSuchProviderException | SignatureException | InvalidKeyException e) {
+			InternalExceptionManager.handleException(e, this, ErrorCode.CUTIL_VERIFY_ERROR);
 			e.printStackTrace();
 			return false;
 		}

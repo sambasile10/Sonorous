@@ -16,6 +16,8 @@ import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import res.ErrorCode;
+import res.InternalExceptionManager;
 import res.Log;
 import res.ManagedThread;
 import res.ThreadManager;
@@ -50,10 +52,12 @@ public class CipherFactory extends ManagedThread {
 					cThread.exec();
 					return cThread;
 				} else {
-					throw new InvalidCipherInitializationException("RSAThread initialization failed");
+					InternalExceptionManager.handleException(this, ErrorCode.RSACIPHER_INIT_FAILED);
+					return null;
 				}
 			} else {
-				throw new InvalidCipherInitializationException("RSA ENCRYPT requires PublicKey object");
+				InternalExceptionManager.handleException(this, ErrorCode.RSACIPHER_KEY_MISMATCH);
+				return null;
 			}
 		} else if(cipherMode == CipherMode.DECRYPT) {
 			if(key instanceof PrivateKey) {
@@ -62,13 +66,16 @@ public class CipherFactory extends ManagedThread {
 					cThread.exec();
 					return cThread;
 				} else {
-					throw new InvalidCipherInitializationException("RSAThread initialization failed");
+					InternalExceptionManager.handleException(this, ErrorCode.RSACIPHER_INIT_FAILED);
+					return null;
 				}
 			} else {
-				throw new InvalidCipherInitializationException("RSA DECRYPT requires PrivateKey object");
+				InternalExceptionManager.handleException(this, ErrorCode.RSACIPHER_KEY_MISMATCH);
+				return null;
 			}
 		} else {
-			throw new InvalidCipherInitializationException("Invalid CipherMode for RSA threads");
+			InternalExceptionManager.handleException(this, ErrorCode.RSACIPHER_INIT_FAILED);
+			return null;
 		}
 	}
 	
@@ -78,7 +85,8 @@ public class CipherFactory extends ManagedThread {
 			cThread.exec();
 			return cThread;
 		} else {
-			throw new InvalidCipherInitializationException("Failed to initialize AESCipherStream!");
+			InternalExceptionManager.handleException(this, ErrorCode.AESCIPHER_INIT_FAILED);
+			return null;
 		}
 	}
 

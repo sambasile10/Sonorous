@@ -22,6 +22,8 @@ import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import res.ErrorCode;
+import res.InternalExceptionManager;
 import res.ManagedThread;
 import res.ThreadManager;
 
@@ -42,15 +44,17 @@ public class AESCipherStream extends ManagedThread {
 	}
 	
 	public byte[] pipe(byte[] data) {
-		if(!this.isInitialized)
-			return null;
+		if(!this.isInitialized) {
+			InternalExceptionManager.handleException(this, ErrorCode.CIPHER_UNINITIALIZED);
+		}
 		
 		try {
 			byte[] cData = cipher.doFinal(data);
 			return useBase64 ? (cipherParams.getCipherMode() == CipherMode.ENCRYPT ? Base64.encodeBase64(cData) : Base64.decodeBase64(cData)) : cData;
 		} catch (IllegalBlockSizeException | BadPaddingException e) {
+			InternalExceptionManager.handleException(e, this, ErrorCode.CIPHER_DFINAL_FAILED);
 			e.printStackTrace();
-			return null;
+			return new byte[1];
 		}
 		
 	}
@@ -60,12 +64,14 @@ public class AESCipherStream extends ManagedThread {
 		try {
 			this.secureRandom = SecureRandom.getInstanceStrong();
 		} catch (NoSuchAlgorithmException e) {
+			InternalExceptionManager.handleException(e, this, ErrorCode.CIPHER_SECRANDOM_FAILED);
 			e.printStackTrace();
 			return -3;
 		}
 		
 		SecretKeySpec keySpec = generateKey();
 		if(keySpec == null) {
+			InternalExceptionManager.handleException(this, ErrorCode.AESCIPHER_GENKEY_FAILED);
 			return -2;
 		}
 		
@@ -75,6 +81,7 @@ public class AESCipherStream extends ManagedThread {
 			this.isInitialized = true;
 			return 0;
 		} catch (GeneralSecurityException e1) {
+			InternalExceptionManager.handleException(e1, this, ErrorCode.AESCIPHER_INIT_FAILED);
 			e1.printStackTrace();
 			return -1;
 		}
@@ -89,6 +96,7 @@ public class AESCipherStream extends ManagedThread {
 			byte[] dk = ((KeyParameter) gen.generateDerivedParameters(256)).getKey();
 			return new SecretKeySpec(dk, "AES");
 		} catch (UnsupportedEncodingException e) {
+			InternalExceptionManager.handleException(e, this, ErrorCode.AESCIPHER_GENKEY_FAILED);
 			e.printStackTrace();
 			return null;
 		}
