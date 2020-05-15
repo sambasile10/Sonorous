@@ -16,41 +16,41 @@ public class Sonorous {
 	//Static variables
 	private static File currentDirectoryPath;
 	private static HashMap<String, String> PROPERTIES;
-	protected static File sonorousLogFilePath = new File("Sonorous.log");
+	protected static File sonorousLogFilePath;
 	
 	//Sonorous non-static components
 	private static CipherFactory thread_CipherFactory = null;
 	private static CipherUtil thread_CipherUtil = null;
 	
-	public static void setProperty() {
+	public static void setProperty(String key, String value) {
+		if(PROPERTIES == null) {
+			PROPERTIES = new HashMap<String, String>();
+		}
 		
+		PROPERTIES.put(key, value);
 	}
 	
-	public static void getProperty() {
+	public static String getProperty(String key) {
+		if(PROPERTIES != null) {
+			if(PROPERTIES.containsKey(key)) {
+				return PROPERTIES.get(key);
+			}
+		}
 		
+		return "";
 	}
 	
 	public static int initialize(Module module) {
-		PROPERTIES = new HashMap<String, String>();
+		if(PROPERTIES == null) {
+			PROPERTIES = new HashMap<String, String>();
+		}
 		
 		switch(module) {
-			case BASE: return initializeSonorousBase();
+			case BASE: return initializeSonorousBase(); 
+			case CRYPTO: return initializeSonorousCrypto();
+			case IO: return 0; //TODO implement I/O module
+			default: return -1;
 		}
-		
-		thread_CipherFactory = new CipherFactory();
-		int isCipherFactoryInitialized = thread_CipherFactory.initialize();
-		
-		thread_CipherUtil = new CipherUtil();
-		int isCipherUtilInitialized = thread_CipherUtil.initialize();
-		if(isCipherFactoryInitialized != 0 || isCipherUtilInitialized != 0) {
-			Log.error("Failed to initialize cryptographic modules!");
-			Log.error("CipherFactory: " + isCipherFactoryInitialized + ", CipherUtil: " + isCipherUtilInitialized);
-			return -2;
-		} else {
-			Log.write("Registered cryptographic modules!");
-		}
-		
-		return 0;
 	}
 	
 	private static int initializeSonorousBase() {
@@ -63,7 +63,23 @@ public class Sonorous {
 			return -2;
 		}
 		
-		boolean isLogInitialized = Log.initialize(true, sonorousLogFilePath);
+		boolean isLogInitialized = false;
+		if(PROPERTIES.containsKey("USE_LOG_FILE")) {
+			if(Boolean.parseBoolean(PROPERTIES.get("USE_LOG_FILE")) == true) {
+				if(PROPERTIES.containsKey("LOG_FILE_PATH")) {
+					sonorousLogFilePath = new File(PROPERTIES.get("LOG_FILE_PATH"));
+					isLogInitialized = Log.initialize(true, sonorousLogFilePath);
+				} else {
+					sonorousLogFilePath = new File(currentDirectoryPath.getAbsolutePath() + "/sonorous.log");
+					isLogInitialized = Log.initialize(true, sonorousLogFilePath);
+				}
+			} else {
+				isLogInitialized = Log.initialize(false, null);
+			}
+		} else {
+			isLogInitialized = Log.initialize(false, null);
+		}
+		
 		boolean isThreadManagerInitialized = ThreadManager.initialize();
 		boolean isExceptionManagerInitialized = InternalExceptionManager.initialize() == 0;
 		if(!isLogInitialized || !isThreadManagerInitialized || !isExceptionManagerInitialized) {
@@ -78,7 +94,20 @@ public class Sonorous {
 	}
 	
 	private static int initializeSonorousCrypto() {
+		thread_CipherFactory = new CipherFactory();
+		int isCipherFactoryInitialized = thread_CipherFactory.initialize();
 		
+		thread_CipherUtil = new CipherUtil();
+		int isCipherUtilInitialized = thread_CipherUtil.initialize();
+		if(isCipherFactoryInitialized != 0 || isCipherUtilInitialized != 0) {
+			Log.error("Failed to initialize cryptographic modules!");
+			Log.error("CipherFactory: " + isCipherFactoryInitialized + ", CipherUtil: " + isCipherUtilInitialized);
+			return -1;
+		} else {
+			Log.write("Registered cryptographic modules!");
+		}
+		
+		return 0;
 	}
 	
 	public static CipherFactory getCipherFactory() {
