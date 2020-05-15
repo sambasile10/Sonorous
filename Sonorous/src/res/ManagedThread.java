@@ -20,5 +20,15 @@ public abstract class ManagedThread extends Thread {
 	
 	public abstract int halt();
 	
+	//Unregister function must be at the end of the halt() function
+	public int unregister() {
+		Thread.currentThread().interrupt();
+		if(this.isInterrupted()) {
+			return (ThreadManager.unregister(threadID) == 0 ? 0 : -2);
+		} else {
+			return -1;
+		}
+	}
+	
 
 }

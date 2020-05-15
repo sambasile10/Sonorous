@@ -67,12 +67,7 @@ public class FileDecryptionStream extends ManagedThread {
 			return -3;
 		}
 		
-		Thread.currentThread().interrupt();
-		if(this.isInterrupted()) {
-			return (ThreadManager.unregister(threadID) == 0 ? 0 : -2);
-		} else {
-			return -1;
-		}
+		return this.unregister();
 	}
 	
 	@Override
