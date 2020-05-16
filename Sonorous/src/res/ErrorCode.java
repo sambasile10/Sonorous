@@ -3,6 +3,7 @@ package res;
 public enum ErrorCode {
 	
 	//Sonorous general errors
+	GEN_IO_ERROR(0, 0, "I/O error occured."),
 	
 	//General crypto errors
 	CIPHER_UNINITIALIZED(1, 0, "Cipher uninitialized"), CIPHER_SECRANDOM_FAILED(1, 1, "SecureRandom failed to initialize"),

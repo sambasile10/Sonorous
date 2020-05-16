@@ -2,8 +2,11 @@ package crypto;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -17,6 +20,7 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.HashMap;
 
@@ -26,6 +30,8 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
 
 import res.ErrorCode;
 import res.InternalExceptionManager;
@@ -141,6 +147,45 @@ public class CipherUtil extends ManagedThread {
 		return pkcs1map;
 	}
 	
+	public int writeRSAKeyPair(File destinationFile, PublicKey publicKey, PrivateKey privateKey) {
+		PemWriter pemWriter = null;
+		if(!destinationFile.exists()) {
+			try {
+				destinationFile.createNewFile();
+				pemWriter = new PemWriter(new OutputStreamWriter(new FileOutputStream(destinationFile.getAbsolutePath(), true)));
+			} catch (IOException e) {
+				InternalExceptionManager.handleException(e, this, ErrorCode.GEN_IO_ERROR);
+				e.printStackTrace();
+				return -3;
+			}
+		}
+		
+		if(publicKey != null) {
+			PemObject pemObject = new PemObject("RSA PUBLIC KEY", ((RSAPublicKey) publicKey).getEncoded());
+			try {
+				pemWriter.writeObject(pemObject);
+			} catch (IOException e) {
+				InternalExceptionManager.handleException(e, this, ErrorCode.GEN_IO_ERROR);
+				e.printStackTrace();
+				return -2;
+			}
+		}
+		
+		if(privateKey != null) {
+			PemObject pemObject = new PemObject("RSA PRIVATE KEY", ((RSAPublicKey) privateKey).getEncoded());
+			try {
+				pemWriter.writeObject(pemObject);
+			} catch (IOException e) {
+				InternalExceptionManager.handleException(e, this, ErrorCode.GEN_IO_ERROR);
+				e.printStackTrace();
+				return -1;
+			}
+		}
+		
+		return 0;
+	}
+	
+	@Deprecated
 	public int writeRSAKeyPair(PublicKey publicKey, PrivateKey privateKey, File outFile, boolean usePKCS1) {
 		HashMap<String, String> keyPair = new HashMap<String, String>();
 		if(usePKCS1) {
