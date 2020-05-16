@@ -20,8 +20,8 @@ public class IOManager extends ManagedThread {
 	private HashMap<Integer, FileEncryptionStream> ENCRYPTION_STREAMS;
 	private HashMap<Integer, FileDecryptionStream> DECRYPTION_STREAMS;
 	
-	protected int MAX_SIMULTANEOUS_STREAMS = 4; //Default set to 4
-	protected int UPDATE_FREQUENCY = 2000; //Default every 2 seconds
+	public int MAX_SIMULTANEOUS_STREAMS = 4; //Default set to 4
+	public int UPDATE_FREQUENCY = 2000; //Default every 2 seconds
 	private boolean performIOLoop = false;
 	
 	private Random random;

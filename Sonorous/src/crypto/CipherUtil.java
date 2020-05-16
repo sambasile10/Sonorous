@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -33,10 +34,13 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 
+import io.IOTask;
 import res.ErrorCode;
 import res.InternalExceptionManager;
 import res.Log;
 import res.ManagedThread;
+import res.Module;
+import res.Sonorous;
 import res.ThreadManager;
 
 public class CipherUtil extends ManagedThread {
@@ -147,7 +151,11 @@ public class CipherUtil extends ManagedThread {
 		return pkcs1map;
 	}
 	
-	public int writeRSAKeyPair(File destinationFile, PublicKey publicKey, PrivateKey privateKey) {
+	/*
+	 * If a key is null it will not be written
+	 * If the AESParameters are null encryption will not be used
+	 */
+	public int writeRSAKeyPair(File destinationFile, PublicKey publicKey, PrivateKey privateKey, AESParameters cipherParams) {
 		PemWriter pemWriter = null;
 		if(!destinationFile.exists()) {
 			try {
@@ -180,6 +188,18 @@ public class CipherUtil extends ManagedThread {
 				e.printStackTrace();
 				return -1;
 			}
+		}
+		
+		if(cipherParams != null) {
+			//Encrypt file
+			if(!Sonorous.getLoadedModules().contains(Module.CRYPTO)) {
+				InternalExceptionManager.handleException(this, ErrorCode.MODULE_NOT_LOADED);
+				return -4;
+			}
+			
+			IOTask writeTask = new IOTask(new File[] { destinationFile }, destinationFile.getParentFile().getAbsoluteFile(), cipherParams);
+			int returnCode = Sonorous.getIOManager().startTask(writeTask);
+			return returnCode;
 		}
 		
 		return 0;

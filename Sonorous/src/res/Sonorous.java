@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 import crypto.CipherFactory;
 import crypto.CipherUtil;
+import io.IOManager;
 
 public class Sonorous {
 	
@@ -23,6 +24,7 @@ public class Sonorous {
 	//Sonorous non-static components
 	private static CipherFactory thread_CipherFactory = null;
 	private static CipherUtil thread_CipherUtil = null;
+	private static IOManager thread_IOManager = null;
 	
 	public static void setProperty(String key, String value) {
 		if(PROPERTIES == null) {
@@ -50,8 +52,8 @@ public class Sonorous {
 		switch(module) {
 			case BASE: return initializeSonorousBase(); 
 			case CRYPTO: return initializeSonorousCrypto();
-			case IO: return 0; //TODO implement I/O module
-			default: return -1;
+			case IO: return initializeSonorousIO();
+			default: return -999;
 		}
 	}
 	
@@ -120,12 +122,40 @@ public class Sonorous {
 		return 0;
 	}
 	
+	private static int initializeSonorousIO() {
+		thread_IOManager = new IOManager();
+		int returnCode = thread_IOManager.initialize();
+		if(returnCode != 0) {
+			return returnCode;
+		}
+		
+		if(getProperty("MAX_SIMULTANEOUS_STREAMS").equals("") == false) {
+			thread_IOManager.MAX_SIMULTANEOUS_STREAMS = Integer.parseInt(getProperty("MAX_SIMULTANEOUS_STREAMS"));
+		}
+		
+		if(getProperty("IO_UPDATE_FREQUENCY").equals("") == false) {
+			thread_IOManager.UPDATE_FREQUENCY = Integer.parseInt(getProperty("IO_UPDATE_FREQUENCY"));
+		}
+		
+		loadedModules.add(Module.IO);
+		thread_IOManager.exec();
+		return 0;
+	}
+	
+	public static ArrayList<Module> getLoadedModules() {
+		return loadedModules;
+	}
+	
 	public static CipherFactory getCipherFactory() {
 		return thread_CipherFactory;
 	}
 	
 	public static CipherUtil getCipherUtil() {
 		return thread_CipherUtil;
+	}
+	
+	public static IOManager getIOManager() {
+		return thread_IOManager;
 	}
 
 }
