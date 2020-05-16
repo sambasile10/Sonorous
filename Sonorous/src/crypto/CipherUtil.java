@@ -105,9 +105,11 @@ public class CipherUtil extends ManagedThread {
 	
 	public KeyPair generateKeyPair(int keySize) {
 		try {
+			Log.write("Generating RSA key pair [" + keySize + "] ...");
 			KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
 			kpg.initialize(keySize);
 			KeyPair kp = kpg.genKeyPair();
+			Log.write("Generated RSA key pair [" + keySize + "] ...");
 			return kp;
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();

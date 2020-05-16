@@ -105,11 +105,9 @@ public class RSACipherStream extends ManagedThread {
 			cipher.init(cipherMode.getCipherMode(),
 					cipherMode == CipherMode.ENCRYPT ? (PublicKey)this.key : (PrivateKey)this.key, secureRandom);
 			this.isInitialized = true;
-			Log.write("[" + className + "//" + threadID + "] initialized with " + cipherMode.getName());
 			return 0;
 		} catch (GeneralSecurityException e2) {
 			InternalExceptionManager.handleException(e2, this, ErrorCode.RSACIPHER_INIT_FAILED);
-			Log.error("[" + className + "//" + threadID + "] failed to initialize with " + cipherMode.getName());
 			e2.printStackTrace();
 			return -2;
 		}

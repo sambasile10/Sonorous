@@ -1,5 +1,6 @@
 package unittests;
 
+import java.security.KeyPair;
 import java.util.Random;
 
 import org.apache.commons.codec.Charsets;
@@ -8,6 +9,7 @@ import crypto.AESCipherStream;
 import crypto.AESParameters;
 import crypto.CipherBlockMode;
 import crypto.CipherMode;
+import crypto.RSACipherStream;
 import res.Module;
 import res.Sonorous;
 
@@ -17,10 +19,10 @@ public class CryptoModuleTest {
 		Sonorous.initialize(Module.BASE);
 		Sonorous.initialize(Module.CRYPTO);
 		
-		runTest();
+		rsaTest();
 	}
 	
-	public static void runTest() {
+	public static void aesTest() {
 		String testString = "test1 test2 test 3 ....... test 4 test 5 abcdefg 1234567890"; 
 		String password = "test12345", salt = "abcdefghjk";
 		
@@ -42,6 +44,21 @@ public class CryptoModuleTest {
 		System.out.println("encrypted: " + new String(cData, Charsets.UTF_8));
 		byte[] dFinal = decryptionStream.pipe(cData);
 		System.out.println("final: " + new String(dFinal, Charsets.UTF_8));
+	}
+	
+	public static void rsaTest() {
+		KeyPair keyPair = Sonorous.getCipherUtil().generateKeyPair(2048);
+		
+		RSACipherStream encryptionStream = Sonorous.getCipherFactory().buildRSAStream(CipherMode.ENCRYPT, keyPair.getPublic(), true);
+		RSACipherStream decryptionStream = Sonorous.getCipherFactory().buildRSAStream(CipherMode.DECRYPT, keyPair.getPrivate(), true);
+		
+		String testString = "test1 test2 test 3 ....... test 4 test 5 abcdefg 1234567890";
+		System.out.println("input: " + testString);
+		byte[] cData = encryptionStream.pipe(testString.getBytes(Charsets.UTF_8));
+		System.out.println("encrypted: " + new String(cData, Charsets.UTF_8));
+		byte[] dFinal = decryptionStream.pipe(cData);
+		System.out.println("final: " + new String(dFinal, Charsets.UTF_8));
+		
 	}
 
 }
