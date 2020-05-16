@@ -21,7 +21,13 @@ public enum ErrorCode {
 	
 	//CipherUtil errors
 	CUTIL_NO_SUCH_HASHALG(5, 0, "Invalid hash algorithm"), CUTIL_SIGN_ERROR(5, 1, "RSA Sign function threw an exception"),
-	CUTIL_VERIFY_ERROR(5, 2, "RSA Verify function threw an exception");
+	CUTIL_VERIFY_ERROR(5, 2, "RSA Verify function threw an exception"),
+	
+	//IOManager errors
+	IOMAN_STREAM_INIT_ERR(6, 0, "Stream returned error during initialization"), IO_CIPHER_ERR(6, 1, "Cipher threw an exception."),
+	IO_STREAM_INIT_ERR(6, 2, "Failed to build file I/O streams."), IO_STREAM_ZIP_ERR(6, 3, "ZipUtil failed an operation."),
+	IOMAN_INVALID_STREAM_ID(6, 4, "Invalid stream ID"), IO_STREAM_DELETE_ERR(6, 5, "Stream failed to delete temporary file(s)");
+	
 	
 	private int majorID, minorID;
 	private String description;

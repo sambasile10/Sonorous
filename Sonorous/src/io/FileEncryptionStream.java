@@ -191,9 +191,11 @@ public class FileEncryptionStream extends ManagedThread implements ProgressMonit
 		//Delete temporary file
 		if(tempFile.delete()) {
 			//Successfully completed all tasks
+			this.stage = 4;
 			return 0;
 		} else {
 			//Failed to delete temporary file, but still wrote out
+			this.stage = 5;
 			return 1;
 		}
 		
