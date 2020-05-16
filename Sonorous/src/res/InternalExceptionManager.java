@@ -36,7 +36,7 @@ public class InternalExceptionManager {
 		StringBuilder sb = new StringBuilder();
 		sb.append("========================================================= \n");
 		sb.append("InternalExceptionManager caught an exception! \n");
-		sb.append("Exception major ID: " + errorCode.getMajorID() + ", minor ID: " + errorCode.getMinorID());
+		sb.append("Exception major ID: " + errorCode.getMajorID() + ", minor ID: " + errorCode.getMinorID() + "\n");
 		sb.append("Exception description: " + errorCode.getDescription() + "\n");
 		
 		if(thread != null) {

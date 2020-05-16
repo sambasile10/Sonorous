@@ -10,6 +10,9 @@ import crypto.AESParameters;
 import crypto.CipherBlockMode;
 import crypto.CipherMode;
 import crypto.RSACipherStream;
+import io.IOManager;
+import res.ErrorCode;
+import res.InternalExceptionManager;
 import res.Module;
 import res.Sonorous;
 
@@ -19,6 +22,10 @@ public class CryptoModuleTest {
 		Sonorous.initialize(Module.BASE);
 		Sonorous.initialize(Module.CRYPTO);
 		
+		
+		
+		aesTest();
+		System.out.println("-------------------------------------------");
 		rsaTest();
 	}
 	
