@@ -57,8 +57,18 @@ public class RSACipherStream extends ManagedThread {
 		}
 		
 		try {
-			byte[] cData = cipher.doFinal(data);
-			return useBase64 ? (cipherMode == CipherMode.ENCRYPT ? Base64.encodeBase64(cData) : Base64.decodeBase64(cData)) : cData;
+			byte[] cData;
+			if(useBase64) {
+				if(cipherMode == CipherMode.ENCRYPT) {
+					cData = cipher.doFinal(data);
+					return Base64.encodeBase64(cData);
+				} else {
+					data = Base64.decodeBase64(data);
+					return cipher.doFinal(data);
+				}
+			} else {
+				return cipher.doFinal(data);
+			}
 		} catch (GeneralSecurityException e) {
 			InternalExceptionManager.handleException(e, this, ErrorCode.CIPHER_DFINAL_FAILED);
 			e.printStackTrace();

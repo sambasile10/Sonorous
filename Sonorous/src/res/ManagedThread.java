@@ -8,7 +8,7 @@ public abstract class ManagedThread extends Thread {
 	public ManagedThread(String className) {
 		this.threadID = ThreadManager.register(this);
 		this.className = className;
-		Log.write("Registered new thread [ " + className + "] with ID [" + threadID + "]");
+		Log.write("Registered new thread [" + className + "] with ID [" + threadID + "]");
 	}
 	
 	//Override all abstract functions
